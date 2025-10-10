@@ -1,0 +1,14 @@
+{
+  "total_graphs": 1000,
+  "avg_nodes_per_graph": 12.282,
+  "avg_edges_per_graph": 7.129,
+  "avg_graph_density": 0.10458425732085376,
+  "max_nodes": 27,
+  "max_edges": 20,
+  "graphs_with_edges": 961,
+  "entity_statistics": {
+    "anatomy_count": 4125,
+    "abnormality_count": 3595,
+    "observation_count": 4562
+  }
+}

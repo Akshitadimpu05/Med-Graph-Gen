@@ -29,29 +29,8 @@ ENV/
 env.bak/
 venv.bak/
 
-# Dataset and Data Files
-data/
+# Raw Dataset Files (exclude large dataset files but keep processed data)
 *.parquet
-*.csv
-*.json
-*.pkl
-*.npz
-
-# Model Files
-models/
-*.pth
-*.pt
-*.bin
-*.safetensors
-
-# Results and Outputs
-results/
-*.png
-*.jpg
-*.jpeg
-*.pdf
-*.html
-*.svg
 
 # Logs
 *.log
