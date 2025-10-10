@@ -32,6 +32,9 @@ venv.bak/
 # Raw Dataset Files (exclude large dataset files but keep processed data)
 *.parquet
 
+# Large processed files (too big for GitHub)
+data/embedded_graphs.json
+
 # Logs
 *.log
 logs/
