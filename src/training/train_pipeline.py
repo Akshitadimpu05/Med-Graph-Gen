@@ -73,7 +73,7 @@ class GraphTrainer:
         )
         self.criterion = nn.CrossEntropyLoss()
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode='min', patience=PATIENCE//2, factor=0.5, verbose=True
+            self.optimizer, mode='min', patience=PATIENCE//2, factor=0.5
         )
     
     def train_epoch(self, dataloader: DataLoader) -> Tuple[float, Dict]:
@@ -313,6 +313,11 @@ class TrainingPipeline:
         
         data_list = [item[0] for item in batch]
         labels = torch.stack([item[1] for item in batch])
+        
+        # Remove edge_attr if it exists to avoid KeyError
+        for data in data_list:
+            if hasattr(data, 'edge_attr'):
+                delattr(data, 'edge_attr')
         
         batched_data = Batch.from_data_list(data_list)
         return batched_data, labels
