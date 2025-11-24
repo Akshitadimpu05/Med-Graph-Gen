@@ -11,6 +11,7 @@ from typing import List, Dict, Tuple, Optional
 import logging
 from pathlib import Path
 import json
+from tqdm import tqdm
 
 from config.config import *
 

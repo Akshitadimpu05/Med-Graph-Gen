@@ -90,11 +90,29 @@ class GraphGenerationPipeline:
         logger.info("Preprocessing completed successfully!")
         logger.info(f"Total samples processed: {len(self.embedded_data)}")
         
+    def load_embedded_data(self) -> None:
+        """Load embedded data from file"""
+        embedded_path = DATA_DIR / "embedded_graphs.json"
+        if not embedded_path.exists():
+            logger.error(f"Embedded data not found at {embedded_path}")
+            logger.error("Please run preprocessing first: python main.py --mode preprocess")
+            return
+        
+        logger.info(f"Loading embedded data from {embedded_path}")
+        import json
+        with open(embedded_path, 'r') as f:
+            self.embedded_data = json.load(f)
+        logger.info(f"Loaded {len(self.embedded_data)} embedded samples")
+    
     def run_training(self) -> None:
         """Run model training pipeline"""
         logger.info("="*50)
         logger.info("STARTING TRAINING PIPELINE")
         logger.info("="*50)
+        
+        if self.embedded_data is None:
+            logger.info("Loading embedded data...")
+            self.load_embedded_data()
         
         if self.embedded_data is None:
             logger.error("No embedded data available. Run preprocessing first.")
@@ -117,6 +135,10 @@ class GraphGenerationPipeline:
         logger.info("="*50)
         logger.info("STARTING EVALUATION AND VISUALIZATION")
         logger.info("="*50)
+        
+        if self.embedded_data is None:
+            logger.info("Loading embedded data...")
+            self.load_embedded_data()
         
         if self.embedded_data is None:
             logger.error("No embedded data available. Run preprocessing first.")
@@ -148,33 +170,74 @@ class GraphGenerationPipeline:
         
         # 1. Sample graph visualizations
         if self.embedded_data:
-            self.visualizer.visualize_single_graph(
-                self.embedded_data[0], 
-                save_path=RESULTS_DIR / "sample_graph.png"
-            )
+            # Generate at least 10 individual graph visualizations
+            self.visualizer.visualize_individual_graphs(self.embedded_data, num_graphs=10)
+            
+            # Generate grid visualization
             self.visualizer.visualize_multiple_graphs(self.embedded_data)
+            
+            # Generate interactive graph
             self.visualizer.create_interactive_graph(self.embedded_data[0])
         
-        # 2. Embedding visualizations
+        # 2. Enhanced Embedding visualizations with disease labeling
         if embeddings['graph_embeddings'].shape[0] > 0:
-            self.visualizer.visualize_embeddings_2d(
-                embeddings['graph_embeddings'], method='tsne'
-            )
-            self.visualizer.visualize_embeddings_2d(
-                embeddings['graph_embeddings'], method='pca'
+            logger.info("Creating enhanced 2D visualizations with disease categories...")
+            
+            # t-SNE visualization with disease types
+            tsne_embeddings_2d = self.visualizer.visualize_embeddings_2d(
+                embeddings['graph_embeddings'], 
+                method='tsne',
+                graph_data=self.embedded_data
             )
             
-            # 3. Clustering analysis
+            # PCA visualization with disease types
+            pca_embeddings_2d = self.visualizer.visualize_embeddings_2d(
+                embeddings['graph_embeddings'], 
+                method='pca',
+                graph_data=self.embedded_data
+            )
+            
+            # 3. Comprehensive Clustering analysis
             if embeddings['graph_embeddings'].shape[0] > 2:
+                logger.info("Performing K-means clustering...")
                 kmeans_results = self.clustering.perform_kmeans_clustering(
                     embeddings['graph_embeddings']
                 )
+                
+                # Enhanced K-means visualization with medical interpretation
                 self.clustering.visualize_clustering_results(
-                    embeddings['graph_embeddings'], kmeans_results
+                    embeddings['graph_embeddings'], 
+                    kmeans_results,
+                    embeddings_2d=tsne_embeddings_2d,
+                    graph_data=self.embedded_data
                 )
                 self.clustering.save_clustering_results(kmeans_results, 'kmeans')
+                
+                # 4. DBSCAN clustering for outlier detection
+                logger.info("Performing DBSCAN clustering for outlier detection...")
+                dbscan_results = self.clustering.perform_dbscan_clustering(
+                    embeddings['graph_embeddings']
+                )
+                
+                if dbscan_results:
+                    self.clustering.visualize_dbscan_results(
+                        embeddings['graph_embeddings'],
+                        tsne_embeddings_2d,
+                        dbscan_results,
+                        graph_data=self.embedded_data
+                    )
+                    self.clustering.save_clustering_results(dbscan_results, 'dbscan')
         
-        logger.info("Evaluation and visualization completed successfully!")
+        logger.info("="*50)
+        logger.info("VISUALIZATION COMPLETE!")
+        logger.info("="*50)
+        logger.info("Generated visualizations:")
+        logger.info("  - Enhanced t-SNE plots with disease categories")
+        logger.info("  - Enhanced PCA plots with density heatmaps")
+        logger.info("  - Comprehensive K-means clustering analysis")
+        logger.info("  - DBSCAN outlier detection analysis")
+        logger.info("  - Medical cluster interpretation")
+        logger.info(f"Results saved in: {RESULTS_DIR}")
         
     def run_full_pipeline(self) -> None:
         """Run the complete pipeline"""

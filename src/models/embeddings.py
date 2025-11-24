@@ -194,9 +194,14 @@ class BioClinicalBERTEmbedder:
         
         if cache_path.exists():
             logger.info(f"Loading embedding cache from {cache_path}")
-            with open(cache_path, 'rb') as f:
-                self.embedding_cache = pickle.load(f)
-            logger.info(f"Loaded {len(self.embedding_cache)} cached embeddings")
+            try:
+                with open(cache_path, 'rb') as f:
+                    self.embedding_cache = pickle.load(f)
+                logger.info(f"Loaded {len(self.embedding_cache)} cached embeddings")
+            except Exception as e:
+                logger.warning(f"Failed to load embedding cache: {e}")
+                logger.info("Starting with empty cache")
+                self.embedding_cache = {}
         else:
             logger.info("No embedding cache found")
 

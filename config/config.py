@@ -28,7 +28,7 @@ GAT_LAYERS = 2
 # Training configuration
 BATCH_SIZE = 16
 LEARNING_RATE = 0.001
-NUM_EPOCHS = 50
+NUM_EPOCHS = 10
 PATIENCE = 10
 DEVICE = "cuda" if os.environ.get("CUDA_VISIBLE_DEVICES") else "cpu"
 
